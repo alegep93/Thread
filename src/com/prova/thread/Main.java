@@ -1,45 +1,45 @@
 package com.prova.thread;
 
-import com.prova.thread.outputter.CountingOutputterIntelligente;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.prova.thread.outputter.CountingOutputterMoltoIntelligente;
 import com.prova.thread.outputter.Outputter;
 
 public class Main {
 	private static Outputter out = new Outputter() {
-		private int c = 5;
 		
 		@Override
-		public void println(String s) {
-			if(c%3 != 0){
-				System.out.print(s +  " ");
-				c++;
-			}else{
-				System.out.println();
-				c++;
-			}
+		public synchronized void println(String s) {
+			System.out.println("  " + s);
 		}
 	};
 	
 	public static void main(String[] args) throws InterruptedException {
-		int numOfIteration = 20;
-		Thread[] tArray = new Thread[2];
-		CountingOutputterIntelligente outi = new CountingOutputterIntelligente(out);
+		int numOfIteration = 100;
+		List<MyThread> mtList = new ArrayList<>();
+		List<Thread> tList = new ArrayList<>();
+		CountingOutputterMoltoIntelligente outi = new CountingOutputterMoltoIntelligente(out);
 
-		for(int i=0; i<tArray.length; i++){
-			MyThread mt = new MyThread("  Thread " + i, numOfIteration, outi);
-			tArray[i] = new Thread(mt);
+		for(int i=0; i<3; i++){
+			MyThread mt = new MyThread("Thread " + i, numOfIteration, outi);
+			mtList.add(mt);
 		}
 
-		for(Thread t : tArray){
+		for(MyThread mt : mtList){
+			Thread t = new Thread(mt);
+			tList.add(t);
+		}
+		
+		for(Thread t : tList){
 			t.start();
 		}
 		
-		for(Thread t : tArray){
-			t.join(); //Aspetta che il thread abbia concluso il suo lavoro
+		for(Thread t : tList){
+			t.join();
 		}
 		
 		outi.flush();
-		System.out.println("--------------------------------------");
-		System.out.println("Numero di thread visti: " + (outi.getSommaThread()));
 		System.out.println("End of work!");
 	}
 }
